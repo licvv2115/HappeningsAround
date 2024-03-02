@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import {getAuth} from 'firebase/auth'
 
 const routes = [
   {
@@ -10,10 +11,15 @@ const routes = [
   {
     path: '/about',
     name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
+    component: () => import('../views/AboutView.vue'),
+    meta: {
+      requiresAuth: true,
+    },
+  },
+  {
+    path: '/home',
+    name: 'homelogin',
+    component: () => import('../views/HomeViewLoggedIn.vue')
   }
 ]
 
@@ -21,5 +27,20 @@ const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes
 })
+
+router.beforeEach((to, from, next) => {
+  if (to.matched.some((record) => record.meta.requiresAuth)) {
+    if (getAuth().currentUser) {
+      next();
+    }
+    else {
+      alert("you dont have access!");
+      next("/")
+    }
+  }
+  else {
+    next();
+  }
+});
 
 export default router
